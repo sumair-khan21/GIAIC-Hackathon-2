@@ -1,0 +1,4 @@
+# Phase I Todo Application - Requirements
+# Python 3.13 or higher required per Constitution
+
+# No external dependencies - Python standard library only
