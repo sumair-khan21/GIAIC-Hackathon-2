@@ -26,8 +26,12 @@ export async function getUserId(): Promise<string | null> {
   return session?.data?.user?.id || null;
 }
 
-// Helper to get JWT token for API calls
+// Helper to get session token for API calls
 export async function getToken(): Promise<string | null> {
-  const session = await getSession();
-  return session?.data?.session?.token || null;
+  try {
+    const session = await getSession();
+    return session?.data?.session?.token || null;
+  } catch {
+    return null;
+  }
 }

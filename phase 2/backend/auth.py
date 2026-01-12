@@ -1,16 +1,21 @@
-"""JWT authentication and user verification."""
+"""Authentication and user verification using Better Auth session tokens."""
 
 import os
+from datetime import datetime
 from fastapi import Request, HTTPException
-from jose import jwt, JWTError
+from sqlalchemy import text
 from dotenv import load_dotenv
+
+from database import engine
 
 load_dotenv()
 
 
 async def get_current_user(request: Request) -> dict:
     """
-    Dependency to extract and verify JWT token from Authorization header.
+    Dependency to extract and verify Better Auth session token from Authorization header.
+
+    Verifies the token against the session table in the database.
 
     Returns:
         dict: User information with 'id' and 'email' keys
@@ -29,32 +34,42 @@ async def get_current_user(request: Request) -> dict:
     token = auth_header.split(" ")[1]
 
     try:
-        secret = os.getenv("BETTER_AUTH_SECRET")
-        if not secret:
-            raise HTTPException(
-                status_code=500,
-                detail="Server configuration error"
-            )
+        # Query session and user from database using raw connection
+        with engine.connect() as conn:
+            query = text("""
+                SELECT s."userId", u.email, u.name, s."expiresAt"
+                FROM session s
+                JOIN "user" u ON s."userId" = u.id
+                WHERE s.token = :token
+            """)
 
-        payload = jwt.decode(
-            token,
-            secret,
-            algorithms=["HS256"]
-        )
+            result = conn.execute(query, {"token": token}).fetchone()
 
-        user_id = payload.get("sub")
-        if not user_id:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid token payload"
-            )
+            if not result:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Invalid or expired token"
+                )
 
-        return {
-            "id": user_id,
-            "email": payload.get("email")
-        }
+            user_id, email, name, expires_at = result
 
-    except JWTError:
+            # Check if session has expired
+            if expires_at and expires_at < datetime.utcnow():
+                raise HTTPException(
+                    status_code=401,
+                    detail="Session expired"
+                )
+
+            return {
+                "id": user_id,
+                "email": email,
+                "name": name
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Auth error: {e}")
         raise HTTPException(
             status_code=401,
             detail="Invalid or expired token"
@@ -67,7 +82,7 @@ def verify_user_access(user_id: str, current_user: dict) -> None:
 
     Args:
         user_id: The user_id from the URL path
-        current_user: The authenticated user from JWT token
+        current_user: The authenticated user from session token
 
     Raises:
         HTTPException: 403 if user_id doesn't match

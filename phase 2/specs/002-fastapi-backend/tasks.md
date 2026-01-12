@@ -163,9 +163,9 @@
 **Purpose**: Final verification and integration testing
 
 - [x] T036 Install dependencies: pip install -r backend/requirements.txt
-- [ ] T037 Start server: uvicorn main:app --reload --port 8000
-- [ ] T038 Verify health check: curl http://localhost:8000/health returns {"status": "healthy"}
-- [ ] T039 Manual integration test with frontend (list, create, update, delete, toggle tasks)
+- [x] T037 Start server: uvicorn main:app --reload --port 8000
+- [x] T038 Verify health check: curl http://localhost:8000/health returns {"status": "healthy"}
+- [x] T039 Manual integration test with frontend (list, create, update, delete, toggle tasks)
 
 **Checkpoint**: Backend fully operational and integrated with frontend
 
@@ -230,11 +230,11 @@ Task T010: Create routes/__init__.py
 | Phase 7: US5 Toggle Complete | T026-T028 (3 tasks) | US5 (P2) | COMPLETE |
 | Phase 8: Assembly | T029-T033 (5 tasks) | - | COMPLETE |
 | Phase 9: Error Handling | T034-T035 (2 tasks) | - | COMPLETE |
-| Phase 10: Polish | T036-T039 (4 tasks) | - | IN PROGRESS |
+| Phase 10: Polish | T036-T039 (4 tasks) | - | COMPLETE |
 
 **Total Tasks**: 39
-**Completed**: 36
-**Remaining**: 3 (manual validation tasks)
+**Completed**: 39
+**Remaining**: 0
 
 ---
 

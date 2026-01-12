@@ -1,38 +1,125 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #3B82F6;
-  --primary-dark: #2563EB;
-  --success: #10B981;
-  --error: #EF4444;
-  --muted: #6B7280;
-  --border: #E5E7EB;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-dark: var(--primary-dark);
-  --color-success: var(--success);
-  --color-error: var(--error);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
+@theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --animate-gradient: gradient 8s ease infinite;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s infinite;
+
+  @keyframes gradient {
+
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+
+    100% {
+      background-position: 200% 0;
+    }
+  }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base Styles */
+:root {
+  --background: #f8fafc;
+  --foreground: #020617;
+  /* Darker slate-950 for better contrast */
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #f8fafc;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  @apply antialiased transition-colors duration-500;
+}
+
+/* Utilities */
+.glass,
+.glass-card {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-width: 1px;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.08);
+  /* Darker border for light mode */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  /* Lighter, cleaner shadow */
+}
+
+.dark .glass,
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glass-card {
+  border-radius: 1rem;
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, var(--color-violet-600), var(--color-purple-600), var(--color-fuchsia-600));
+}
+
+.dark .text-gradient {
+  background-image: linear-gradient(to right, var(--color-violet-400), var(--color-purple-400), var(--color-fuchsia-400));
+}
+
+.btn-primary {
+  @apply relative overflow-hidden rounded-xl px-4 py-2 font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 active:scale-95;
+  background-image: linear-gradient(to right, var(--color-violet-600), var(--color-purple-600), var(--color-fuchsia-600));
+}
+
+.btn-primary:hover {
+  box-shadow: 0 10px 40px -10px rgba(168, 85, 247, 0.25);
+}
+
+.input-ring {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+.input-ring:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) rgba(168, 85, 247, 0.5);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+  border-color: var(--color-purple-500);
 }

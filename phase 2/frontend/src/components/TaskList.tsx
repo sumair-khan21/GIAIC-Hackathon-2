@@ -2,12 +2,24 @@
 
 import { Task } from "@/types/task";
 import TaskCard from "./TaskCard";
+import { motion } from "framer-motion";
+import { Layers } from "lucide-react";
 
 interface TaskListProps {
   tasks: Task[];
   isLoading?: boolean;
   onToggleComplete?: (taskId: number) => void;
 }
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05
+    }
+  }
+};
 
 export default function TaskList({
   tasks,
@@ -16,20 +28,12 @@ export default function TaskList({
 }: TaskListProps) {
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[...Array(3)].map((_, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, index) => (
           <div
             key={index}
-            className="bg-background border border-border rounded-lg p-4 animate-pulse"
-          >
-            <div className="flex items-start space-x-3">
-              <div className="mt-1 h-4 w-4 bg-muted/30 rounded" />
-              <div className="flex-1">
-                <div className="h-5 bg-muted/30 rounded w-3/4 mb-2" />
-                <div className="h-4 bg-muted/30 rounded w-1/2" />
-              </div>
-            </div>
-          </div>
+            className="h-40 rounded-2xl bg-slate-200/50 dark:bg-slate-800/50 animate-pulse"
+          />
         ))}
       </div>
     );
@@ -37,38 +41,39 @@ export default function TaskList({
 
   if (tasks.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="text-muted">
-          <svg
-            className="mx-auto h-12 w-12 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
-          <p className="text-lg font-medium">No tasks yet</p>
-          <p className="mt-1 text-sm">Create your first task to get started!</p>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex flex-col items-center justify-center py-20 text-center"
+      >
+        <div className="w-24 h-24 bg-gradient-to-br from-violet-100 to-fuchsia-100 dark:from-violet-900/40 dark:to-fuchsia-900/40 rounded-full flex items-center justify-center mb-6 animate-float">
+          <Layers className="w-10 h-10 text-purple-600 dark:text-purple-400" />
         </div>
-      </div>
+        <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600">
+          No tasks found
+        </h3>
+        <p className="mt-2 text-slate-500 max-w-sm mx-auto">
+          You&apos;re all caught up! Create a new task to get started with your productivity journey.
+        </p>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {tasks.map((task) => (
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20"
+    >
+      {tasks.map((task, index) => (
         <TaskCard
           key={task.id}
           task={task}
           onToggleComplete={onToggleComplete}
+          index={index}
         />
       ))}
-    </div>
+    </motion.div>
   );
 }
