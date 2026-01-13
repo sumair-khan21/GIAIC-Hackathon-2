@@ -8,30 +8,33 @@ export const authClient = createAuthClient({
 // Export auth methods for convenience
 export const { signIn, signUp, signOut, useSession } = authClient;
 
-// Helper to get current session
-export async function getSession() {
-  const session = await authClient.getSession();
-  return session;
-}
-
-// Helper to check if user is authenticated
-export async function isAuthenticated(): Promise<boolean> {
-  const session = await getSession();
-  return !!session?.data?.user;
+// Helper to get session token directly for API calls
+export async function getToken(): Promise<string | null> {
+  try {
+    // Always fetch fresh session for API calls to ensure we have valid token
+    const session = await authClient.getSession();
+    return session?.data?.session?.token || null;
+  } catch {
+    return null;
+  }
 }
 
 // Helper to get user ID from session
 export async function getUserId(): Promise<string | null> {
-  const session = await getSession();
-  return session?.data?.user?.id || null;
-}
-
-// Helper to get session token for API calls
-export async function getToken(): Promise<string | null> {
   try {
-    const session = await getSession();
-    return session?.data?.session?.token || null;
+    const session = await authClient.getSession();
+    return session?.data?.user?.id || null;
   } catch {
     return null;
+  }
+}
+
+// Helper to check if user is authenticated
+export async function isAuthenticated(): Promise<boolean> {
+  try {
+    const session = await authClient.getSession();
+    return !!session?.data?.user;
+  } catch {
+    return false;
   }
 }

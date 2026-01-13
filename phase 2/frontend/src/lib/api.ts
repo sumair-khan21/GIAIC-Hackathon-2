@@ -1,6 +1,6 @@
 import { Task, CreateTaskInput, UpdateTaskInput, TaskFilter } from "@/types/task";
 import { TaskListResponse, TaskResponse, DeleteResponse, ApiError } from "@/types/api";
-import { getToken } from "./auth";
+import { authClient } from "./auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -16,12 +16,22 @@ export class ApiRequestError extends Error {
   }
 }
 
-// Base fetch wrapper with JWT attachment and error handling
+// Get token directly from Better Auth client
+async function getTokenForApi(): Promise<string | null> {
+  try {
+    const session = await authClient.getSession();
+    return session?.data?.session?.token || null;
+  } catch {
+    return null;
+  }
+}
+
+// Base fetch wrapper with token attachment and error handling
 async function apiFetch<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = await getToken();
+  const token = await getTokenForApi();
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",

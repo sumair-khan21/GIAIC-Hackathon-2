@@ -10,7 +10,7 @@ import Modal from "@/components/Modal";
 import { Task, TaskFilter } from "@/types/task";
 import { TaskFormData } from "@/lib/validations";
 import { getTasks, createTask, toggleComplete } from "@/lib/api";
-import { getUserId } from "@/lib/auth";
+import { useSession } from "@/lib/auth";
 import { motion } from "framer-motion";
 import { Plus, LayoutDashboard, CheckCircle2, Clock, ListTodo } from "lucide-react";
 import toast from "react-hot-toast";
@@ -18,12 +18,13 @@ import toast from "react-hot-toast";
 export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session, isPending } = useSession();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filter = (searchParams.get("filter") as TaskFilter) || "all";
+  const userId = session?.user?.id;
 
   // Calculate stats
   const stats = {
@@ -38,7 +39,7 @@ export default function DashboardPage() {
     setIsLoading(true);
     try {
       const fetchedTasks = await getTasks(userId, filter);
-      setTasks(fetchedTasks); // In a real app we might want to fetch all tasks for stats if the API limits by filter
+      setTasks(fetchedTasks);
     } catch {
       toast.error("Failed to load tasks");
     } finally {
@@ -46,18 +47,14 @@ export default function DashboardPage() {
     }
   }, [userId, filter]);
 
+  // Redirect if not authenticated
   useEffect(() => {
-    const initUser = async () => {
-      const id = await getUserId();
-      if (id) {
-        setUserId(id);
-      } else {
-        router.push("/auth/signin");
-      }
-    };
-    initUser();
-  }, [router]);
+    if (!isPending && !session?.user) {
+      router.push("/auth/signin");
+    }
+  }, [session, isPending, router]);
 
+  // Fetch tasks when user is ready
   useEffect(() => {
     if (userId) {
       fetchTasks();

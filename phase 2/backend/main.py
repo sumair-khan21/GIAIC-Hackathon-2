@@ -17,9 +17,18 @@ app = FastAPI(
 )
 
 # Configure CORS middleware (T030)
+# Allow all origins for Hugging Face deployment
+import os
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+ALLOWED_ORIGINS = [
+    FRONTEND_URL,
+    "http://localhost:3000",
+    "https://*.vercel.app",
+]
+# For development/free tier, allow all origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,6 +46,18 @@ def on_startup():
         create_tables()
     except RuntimeError as e:
         print(f"Warning: Could not create tables - {e}")
+
+
+# Root endpoint
+@app.get("/")
+def root():
+    """Root endpoint with API info."""
+    return {
+        "name": "Todo API Backend",
+        "version": "1.0.0",
+        "status": "running",
+        "docs": "/docs"
+    }
 
 
 # Health check endpoint (T033)
