@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.frontend.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.frontend.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.frontend.name }}
+    spec:
+      containers:
+      - name: {{ .Values.frontend.name }}
+        image: {{ .Values.frontend.image }}
+        imagePullPolicy: Never
+        ports:
+        - containerPort: {{ .Values.frontend.port }}
+        envFrom:
+        - configMapRef:
+            name: todo-config
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: todo-secrets
+              key: NEON_DATABASE_URL
+        - name: BETTER_AUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: todo-secrets
+              key: BETTER_AUTH_SECRET
+        resources:
+          {{- toYaml .Values.frontend.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.frontend.probes.path }}
+            port: {{ .Values.frontend.port }}
+          initialDelaySeconds: {{ .Values.frontend.probes.livenessDelay }}
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.frontend.probes.path }}
+            port: {{ .Values.frontend.port }}
+          initialDelaySeconds: {{ .Values.frontend.probes.readinessDelay }}
+          periodSeconds: 5
