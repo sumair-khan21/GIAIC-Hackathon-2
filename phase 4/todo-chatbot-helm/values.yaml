@@ -1,0 +1,48 @@
+namespace: todo-app
+
+frontend:
+  name: frontend
+  image: todo-frontend:latest
+  replicas: 2
+  port: 3000
+  service:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    path: /
+    livenessDelay: 30
+    readinessDelay: 10
+
+backend:
+  name: backend
+  image: todo-backend:latest
+  replicas: 2
+  port: 8000
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  probes:
+    path: /docs
+    livenessDelay: 30
+    readinessDelay: 10
+
+config:
+  apiUrl: "http://backend-service:8000"
+  authUrl: "http://frontend-service:3000"
+
+secrets:
+  cohereApiKey: ""
+  neonDbUrl: ""
+  authSecret: ""

@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.backend.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.backend.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.backend.name }}
+    spec:
+      containers:
+      - name: {{ .Values.backend.name }}
+        image: {{ .Values.backend.image }}
+        imagePullPolicy: Never
+        ports:
+        - containerPort: {{ .Values.backend.port }}
+        envFrom:
+        - configMapRef:
+            name: todo-config
+        env:
+        - name: COHERE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: todo-secrets
+              key: COHERE_API_KEY
+        - name: NEON_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: todo-secrets
+              key: NEON_DATABASE_URL
+        - name: BETTER_AUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: todo-secrets
+              key: BETTER_AUTH_SECRET
+        resources:
+          {{- toYaml .Values.backend.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.backend.probes.path }}
+            port: {{ .Values.backend.port }}
+          initialDelaySeconds: {{ .Values.backend.probes.livenessDelay }}
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.backend.probes.path }}
+            port: {{ .Values.backend.port }}
+          initialDelaySeconds: {{ .Values.backend.probes.readinessDelay }}
+          periodSeconds: 5
